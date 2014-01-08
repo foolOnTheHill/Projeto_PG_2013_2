@@ -5,11 +5,14 @@ VOXAR Labs
 Computer Science Center - CIn
 Federal University of Pernambuco - UFPE
 http://www.cin.ufpe.br/~voxarlabs
+
+@author Tullio Lucena - tjsl
+@updated by George Oliveira - ghao
 -----------------------------------------------------------------------------
 */
 
-#ifndef _OPENGL_TUTORIAL_H_
-#define _OPENGL_TUTORIAL_H_
+#ifndef _PROJETOPG_H_
+#define _PROJETOPG_H_
 
 #include <cstdio>
 #include <cstdlib>
@@ -24,10 +27,71 @@ using namespace std;
 #define IDLE		-2	// Nada a fazer
 #define MODIFIED	-1	// A tela foi modificada
 
-struct Quadrado{
-	GLfloat lado, x, y, r, g, b;
-	Quadrado(GLfloat lado=0.0, GLfloat x=0.0, GLfloat y=0.0, GLfloat r=0.0, GLfloat g=0.0, GLfloat b=0.0):lado(lado),x(x),y(y),r(r),g(g),b(b){}
+class Point {
+
+public:
+	GLfloat x, y, z; // Coordenadas
+
+	Point (GLfloat xp, GLfloat yp, GLfloat zp) {
+		x = xp;
+		y = yp;
+		z = zp;
+	}
+
+	void setCoord(GLfloat xp, GLfloat yp, GLfloat zp) {
+		x = xp;
+		y = yp;
+		z = zp;
+	}
+
 };
+
+class Circle {
+
+public:
+	Point center; // Centro do circulo
+	//Parametros RGB para colorir o circulo
+	float r, g, b;
+
+	Circle(Point c, float rp, float gp, float bp) {
+		center = c
+		r = rp;
+		g = gp;
+		b = bp;
+	}
+
+};
+
+/**
+* Funcao para calcular os pontos de controle de uma B-Spline Cubica C2.
+*/
+void control_points();
+
+/**
+* Funcao para calcular os parametros auxiliares para determinar os pontos da de controle;
+*/
+void init_u();
+
+/**
+* Funcao para calcular os pontos de controle de uma B-Spline Cubica C2.
+* @param control_points array com os pontos de controle
+* @param i indice do ponto que se quer calcular
+* @param r nivel atual do algoritmo
+* @param t parametro da interpolacao
+* @param start indice do ponto onde se inicia a computacao
+*/
+Point de_casteljau(Point* control_points, int i, int r, double t, int start);
+
+/**
+* Funcao que pinta a curva de Bezier na tela.
+*/
+void draw_curve();
+
+/**
+* Funcao que pinta um circulo na tela.
+* @param c instancia da classe Circle, que representa o circulo que sera desenhado na tela.
+*/
+void draw_circle(Circle c);
 
 /**
 * Funcao para inicializacao do programa.
@@ -42,7 +106,7 @@ void myinit();
 void myreshape (GLsizei w, GLsizei h);
 
 /**
-* Esta é a funcao responsavel por pintar os objetos na tela.
+* Esta Ã© a funcao responsavel por pintar os objetos na tela.
 */
 void mydisplay();
 
@@ -88,4 +152,4 @@ void hadleSpecialKeyboard(int key, int x, int y);
 */
 void loop(int id);
 
-#endif //_OPENGL_TUTORIAL_H_
+#endif //_PROJETOPG_H_
