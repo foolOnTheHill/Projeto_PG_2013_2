@@ -38,7 +38,12 @@ public:
 		z = zp;
 	}
 
-	void setCoord(GLfloat xp, GLfloat yp, GLfloat zp) {
+	void setCoordXY(GLfloat xp, GLfloat yp) {
+		x = xp;
+		y = yp;
+	}
+
+	void setCoordXYZ(GLfloat xp, GLfloat yp, GLfloat zp) {
 		x = xp;
 		y = yp;
 		z = zp;
@@ -120,14 +125,14 @@ void handleMotion(int x, int y);
 
 /**
 * Esta funcao vai ser chamada toda vez que uma tecla do mouse seja clicada ou levantada.
-* Com o botao direito do mouse, um quadrado pode ser criado na posicao atual do mouse, com uma cor e tamanho aleatorio.
-* Com o botao esquerdo do mouse, um quadrado pode ser movimentado.
+* Com o botao direito do mouse, um ponto pode ser criado na posicao atual do mouse.
+* Com o botao esquerdo do mouse, um ponto pode ser movimentado.
 * @param btn Tecla levantada. Ex: GLUT_LEFT_BUTTON.
-* @param state Estado da tecla. Ex: GLUT_DOWN.
+* @param key_state Estado da tecla. Ex: GLUT_DOWN.
 * @param x Coordenada x atual do mouse.
 * @param y Coordenada y atual do mouse.
 */
-void handleMouse(int btn, int state, int x, int y);
+void handleMouse(int btn, int key_state, int x, int y);
 
 /**
 * Esta funcao vai ser chamada toda vez que uma tecla comum seja levantada.
