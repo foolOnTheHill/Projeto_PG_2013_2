@@ -70,7 +70,7 @@ public:
 /**
 * Funcao para calcular os pontos de controle de uma B-Spline Cubica C2.
 */
-void control_points();
+void find_control_points();
 
 /**
 * Funcao para calcular os parametros auxiliares para determinar os pontos da de controle;
