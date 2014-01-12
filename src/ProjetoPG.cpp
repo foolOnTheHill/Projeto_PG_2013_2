@@ -9,22 +9,16 @@ Federal University of Pernambuco - UFPE
 -----------------------------------------------------------------------------
 */
 
-#include "ProjetoPG.h"
+#include "Template2D.h"
+#include <math.h> 
 
 int state = 0; // P/ a maquina de estados
 int numpoints = 0; // Quantidade de pontos para desenhar a curva
 int qpoints = 0; // Quantidade de pontos colocados pelo usuario
 int factor = 100;
 
-// Auxiliares para desenhar o circulo que desliza pela curva
-int circle = 0;
-vector<Circle> curva;
-
 // Posicao do mouse
 GLfloat mouse_x, mouse_y;
-
-// Cores dos pontos
-Point colors[2];
 
 // Para determinar a curva
 Point control_points[50000]; // Pontos de controle da B-spline
@@ -43,107 +37,179 @@ bool hide_curve = false;
 bool hide_lines = false;
 bool hide_control_points = true;
 bool hide_control_polygon = true;
-bool hide_circle = false;
 
-void find_control_points() {
-	int L = qpoints - 3;
-	float a;
-
-	// d0 e d1
-	control_points[0] = ds[0];
-	control_points[1] = ds[1];
-
-	// d2
-	a = d_u(1)/(d_u(1) + d_u(2));
-	control_points[2].x = (1-a)*ds[1].x + a*ds[2].x;
-	control_points[2].y = (1-a)*ds[1].y + a*ds[2].y;
-
-	// d3L-3
-	a = d_u(L-1)/(d_u(L-1) + d_u(L));
-	control_points[(3*L)-3].x = (1-a)*ds[(3*L)-4].x + a*ds[(3*L)-2].x;
-	control_points[(3*L)-3].y = (1-a)*ds[(3*L)-4].y + a*ds[(3*L)-2].y;
-
-	// d3L-2
-	a = d_u(L-1)/(d_u(L-1) + d_u(L));
-	control_points[(3*L)-2].x = (1-a)*ds[L].x + a*ds[L+1].x;
-	control_points[(3*L)-2].y = (1-a)*ds[L].y + a*ds[L+1].y;
-
-	// d3L-1 e d3L
-	control_points[(3*L)-1] = ds[L+1];
-	control_points[3*L] = ds[L+2];
-
-	for (int i = 0; i < L-3; i++) {
-
-		// d3i
-		a = d_u(i)/(d_u(i) + d_u(i+1));
-		control_points[3*i].x = (1-a)*ds[(3*i)-1].x + a*ds[(3*i)+1].x;
-		control_points[3*i].y = (1-a)*ds[(3*i)-1].y + a*ds[(3*i)+1].y;
-
-		// d3i+1
-		a = d_u(i)/(d_u(i) + d_u(i+1) + d_u(i+2));
-		control_points[(3*i)+1].x = (1-a)*ds[i+1].x + a*ds[i+2].x;
-		control_points[(3*i)+1].y = (1-a)*ds[i+1].y + a*ds[i+2].y;
-
-		// d3i+2
-		a = (d_u(i) + d_u(i+1))/(d_u(i) + d_u(i+1) + d_u(i+2));
-		control_points[(3*i)+2].x = (1-a)*ds[i+1].x + a*ds[i+2].x;
-		control_points[(3*i)+2].y = (1-a)*ds[i+1].y + a*ds[i+2].y;
-	
-	}
-
+float d_u(int i) {
+	return us[i] - us[i-1];
 }
 
 void init_u() {
 
 	// Calcula os us utilizados na parametrização
-	for (int i = 0; i < qpoints-2; i++) {
-		float d_x = pow(ds[i+2].x - ds[i].x, 2.0);
-		float d_y = pow(ds[i+2].y - ds[i].y, 2.0);
+	for (int i = 0; i <= qpoints-3; i++) {
+		double d_x = pow(double(ds[i+2].x - ds[i].x), 2.0);
+		double d_y = pow(double(ds[i+2].y - ds[i].y), 2.0);
 
 		us[i] = sqrt(d_x + d_y); // Corda
 
 		if (i > 0) {
 			us[i] += us[i-1];
 		}
+
 	}
 
 }
 
-float d_u(int i) {
-	return us[i] - us[i-1];
+void find_control_points() {
+
+    int L = qpoints-3, k = 6;
+    float b, a;
+
+    Point H, I, J, P, Q, R;
+
+    init_u();
+          
+    control_points[0] = ds[0];
+    control_points[1] = ds[1];
+    control_points[(3*L) - 1] = ds[L+1];
+    control_points[3*L] = ds[L+2];
+
+    a = d_u(1)/(d_u(1) + d_u(2));    
+    b = d_u(2)/(d_u(1) + d_u(2));
+    H.x = ds[1].x * b + ds[2].x * a;
+    H.y = ds[1].y * b + ds[2].y * a;
+    control_points[2] = H;
+               
+    a = d_u(L-1)/(d_u(L-1) + d_u(L));
+    b = d_u(L)/(d_u(L-1) + d_u(L));
+    I.x = ds[L].x * b + ds[L+1].x * a;
+    I.y = ds[L].y * b + ds[L+1].y * a;
+    control_points[(3*L)-2] = I;
+
+	a = d_u(L-1)/(d_u(L-1) + d_u(L));
+    b = d_u(L)/(d_u(L-1) + d_u(L));
+    J.x = (control_points[(3*L) - 4].x * b) + (control_points[(3*L) - 2].x * a);
+    J.y = (control_points[(3*L) - 4].y * b) + (control_points[(3*L) - 2].y * a);
+    control_points[(3*L)-3] = J;
+    
+    for(int i = 1; i <= L - 2; i++){
+
+        a = d_u(i)/(d_u(i) + d_u(i+1));    
+        b = d_u(i+1)/(d_u(i) + d_u(i+1));
+        P.x = (control_points[(3*i) - 1].x * b) + (control_points[(3*i) + 1].x * a);
+        P.y = (control_points[(3*i) - 1].y * b) + (control_points[(3*i) + 1].y * a);
+        control_points[3*i] = P;
+         
+        a = d_u(i)/(d_u(i) + d_u(i+1) + d_u(i+2));
+        b = (d_u(i+1) + d_u(i+2))/(d_u(i) + d_u(i+1) + d_u(i+2));
+        Q.x = (ds[i+1].x * b) + (ds[i+2].x * a);
+        Q.y = (ds[i+1].y * b) + (ds[i+2].y * a);
+        control_points[(3*i)+1] = Q;
+         
+        a = (d_u(i) + d_u(i+1))/(d_u(i) + d_u(i+1) + d_u(i+2));
+        b = d_u(i+2)/(d_u(i) + d_u(i+1) + d_u(i+2));
+        R.x = (ds[i+1].x * b) + (ds[i+2].x * a);
+        R.y = (ds[i+1].y * b) + (ds[i+2].y * a);
+        control_points[(3*i)+2] = R;
+
+		k += 3;
+	}
+
 }
 
-Point de_casteljau(Point* control_points, int i, int r, double t, int start) {
+Point de_casteljau(Point* control, int i, int r, double t, int start) {
 
+	if (r == 0) {
+		return control[i+start]; // Ponto no nivel adequado
+	} else {
+		Point g = de_casteljau(control, i, r-1, t, start);
+		Point h = de_casteljau(control, i+1, r-1, t, start);
+		Point k;
+
+		k.setCoordXY((1-t)*g.x + t*h.x, (1-t)*g.y + t*h.y);
+
+		return k;
+	}
 }
 
 void draw_curve() {
 
-}
+	Point P, Q;
 
-void draw_circle(Circle c) {
-	/*From the tutorial at http://slabode.exofire.net/circle_draw.shtml*/
-	int num_segments = 20;
+	int L = qpoints - 3;
 
-	float theta = (2 * 3.14159)/float(20);
-	float c = cosf(theta), s = sinf(theta), t;
+	if (numpoints <= 4) {
 
-	float x = 20; // x = r
-	float y = 0;
+		float par = 0;
 
-	GLfloat cx = c.center.x;
-	GLfloat cy = c.center.y;
+		while (par <= 1) {
+			Q = de_casteljau(control_points, 0, numpoints-1, par, 0);
 
-	glBegin(GL_LINE_LOOP);
-	for (int i = 0; i < num_segments; i++) {
-		glColor3f(c.r, c.g, c.b);
-		glVertex2f(x + cx, y + cy);
+			glBegin(GL_POINTS);
+			glColor3f(0.0f, 0.0f, 237.0f);
+			glVertex2f(Q.x, Q.y);
+			glEnd();
 
-		t = x;
-		x = c*x - s*y;
-		y = s*t + c*y;
+			if (par > 0) {
+				glBegin(GL_LINES);
+				glColor3f(0.0f, 0.0f, 237.0f);
+				glVertex2f(Q.x, Q.y);
+				glVertex2f(P.x, P.y);
+				glEnd();		
+			}
+
+			P.setCoordXY(Q.x, Q.y);
+
+			par += float(1)/float(factor);
+		} 
+
+	} else {
+
+		float par = 0;
+		GLfloat u;
+
+		for (int i = 0; i < L; i++) {
+
+			u = us[i];
+			while (u <= us[i+1]) {
+
+				par = (u - us[i])/(us[i+1] - us[i]); // Parametrização
+	
+				if (i != L-1) {
+					Q = de_casteljau(control_points, 0, 3, par, 3*i);
+				} else {
+					Q = de_casteljau(control_points, 0, numpoints - (1 + 3*i), par, 3*i);
+				}
+
+				glBegin(GL_POINTS);
+				glColor3f(0.0f, 0.0f, u);
+				glVertex2f(Q.x, Q.y);
+				glEnd();
+
+				// Liga um segmento de reta entre dois pontos consecutivos da curva
+				if (u > us[0]) {
+					glBegin(GL_LINES);
+					glColor3f(0.0f, 0.0f, u);
+					glVertex2f(Q.x, Q.y);
+					glVertex2f(P.x, P.y);
+					glEnd();		
+				}
+
+				P.setCoordXY(Q.x, Q.y);
+
+				u += (us[L]-us[0])/float(factor); // Divide o intervalo de acordo com o fator escolhido pelo usuario apertando (+/-)
+			}
+
+		}
+
+		// Ultimo ponto da curva
+		glBegin(GL_LINES);
+		glColor3f(0.0f, 0.0f, u);
+		glVertex2f(control_points[(3*L)].x, control_points[(3*L)].y);
+		glVertex2f(P.x, P.y);
+		glEnd();
+                  
 	}
-	glEnd();
+
 }
 
 void myreshape (GLsizei w, GLsizei h) {
@@ -166,9 +232,6 @@ void myinit() {
 
 	myreshape(window_width, window_height);
 
-	colors[0].setCoordXYZ(255.0/255.0, 36.0/255.00, 0/255);
-	colors[1].setCoordXYZ(1, 215.0/255.0, 0);
-	
 	loop(0);
 }
 
@@ -180,28 +243,32 @@ void mydisplay() {
 	glPointSize(6.0);
 
 	for (int p = 0; p < qpoints; p++) {
-		
+
+		// Mostra os pontos determinados pelo usuario
 		if (!hide_points) {
 			glBegin(GL_POINTS);
 			glColor3f(0, 0, 0);
-			glVertex2f(ds[i].x, ds[i].y);
+			glVertex2f(ds[p].x, ds[p].y);
 			glEnd();
 		}
 
-		if (qpoints > 1 && !hide_lines && i > 0) {
+		// Poligonal de controle dos pontos escolhidos pelo usuario
+		if (qpoints > 1 && !hide_lines && p > 0) {
 			glBegin(GL_LINES);
 			glColor3f(0, 0, 0);
-			glVertex2f(ds[i].x, ds[i].y);
-			glVertex2f(ds[i-1].x, ds[i-1].y);
+			glVertex2f(ds[p].x, ds[p].y);
+			glVertex2f(ds[p-1].x, ds[p-1].y);
 			glEnd();
 		}
 
 	}
 
+	// Pinta a curva com no max. 4 pontos escolhidos pelo usuario.
 	if (!hide_curve && qpoints > 1 && qpoints <= 4) {
 
 		numpoints = qpoints;
 
+		// Os pontos de controle são os mesmos do usuario
 		for (int p = 0; p < qpoints; p++) {
 			control_points[p] = ds[p];
 		}
@@ -210,12 +277,16 @@ void mydisplay() {
 		draw_curve();
 		glPointSize(6.0);
 
+	// Pinta a curva com mais de 4 pontos
 	} else if (qpoints > 4) {
 
-		find_control_points();
+		numpoints = 3*(qpoints-3) + 1;
+        
+		find_control_points(); // Calcula os pontos de controle para a B-Spline
 
 		if (!hide_control_points) {
 
+			// Pinta os pontos de controle de verde na tela
 			for (int p = 0; p < numpoints; p++) {
 				glBegin(GL_POINTS);
 				glColor3f(0.0, 255.0, 0.0);
@@ -225,11 +296,12 @@ void mydisplay() {
 
 		}
 
+		// Pinta a poligonal de controle da B-spline
 		if (!hide_control_polygon) {
 
 			for (int p = 1; p < numpoints; p++) {
 				glBegin(GL_LINES);
-				glColor3f(0.0, 255.0, 0.0);
+				glColor3f(0.0, 250.0, 0.0);
 				glVertex2f(control_points[p].x, control_points[p].y);
 				glVertex2f(control_points[p-1].x, control_points[p-1].y);
 				glEnd();
@@ -237,15 +309,11 @@ void mydisplay() {
 
 		}
 
+		// Pinta a B-spline
 		if (!hide_curve) {
 			glPointSize(1.5);
 			draw_curve();
 			glPointSize(6.0);
-		}
-
-		/*Talvez nao seja necessario...*/
-		if (!hide_circle) {
-			draw_circle(curve[circle]);
 		}
 
 	}
@@ -299,14 +367,11 @@ void handleMouse(int btn, int key_state, int x, int y) {
 
 					// Apaga o ponto clicado
 					for (int q = p+1; q < qpoints; q++) {
-						ds[q-i] = ds[q];
+						ds[q-1] = ds[q];
 					}
 
 					qpoints -= 1;
-					if (qpoints <= 1) {
-						curva.clear();
-					}
-
+					
 					state = MODIFIED;
 					break;
 				}
@@ -316,6 +381,7 @@ void handleMouse(int btn, int key_state, int x, int y) {
 	} else if (state == IDLE && btn == GLUT_RIGHT_BUTTON) { // Usuario clicou na tela com o botao direito
 		
 		if (key_state == GLUT_DOWN) {
+
 			// Adiciona um ponto na posição clicada
 			GLfloat px = x, py = y;
 			Point p;
@@ -337,11 +403,9 @@ void hadleKeyboard(unsigned char key, int x, int y) {
 		hide_control_polygon = !hide_control_polygon;
 	} else if (key == 'r'){ // Toggle nos Pontos de controle
 		hide_control_points = !hide_control_points;
-	} else if(key == 'y'){ // Toggle o circulo que desliza pela curva
-		hide_circle = !hide_circle;
-	} else if(key == '+'){
+	} else if(key == '+'){ // Mais pontos na curva
 		factor += 50;
-	} else if(key == '-'){
+	} else if(key == '-'){ // Menos pontos na curva
 		factor = max(factor-50, 50);
 	} else if (key == 'q'){ // Toggle os pontos do usuario
         hide_points = !hide_points;
@@ -355,7 +419,7 @@ void hadleKeyboard(unsigned char key, int x, int y) {
 }
 
 void hadleSpecialKeyboard(int key, int x, int y) {
-	// Limpa a tela
+	// Atualiza a tela
 	if (key == GLUT_KEY_F5) {
 		myinit();
 	}
@@ -366,21 +430,10 @@ void loop(int id) {
 	if (state == MODIFIED) { // A curva deve ser modificada
 		mydisplay();
 		mydisplay();
-
 		state = IDLE;
-		circle = 0;
 	} else if (state != IDLE) {
 		mydisplay();
 		mydisplay();
-	} else if (!hide_circle && circle < curva.size()) { // Move o circulo pela curva.
-		mydisplay();
-		mydisplay();
-
-		circle += 1;
-		if (circle >= curva.size()) {
-			circle = 0;
-		}
-		glFlush();
 	}
 
 	glutTimerFunc(1000/FPS, loop, id);
