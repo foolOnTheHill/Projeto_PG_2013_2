@@ -15,6 +15,17 @@ O usuário poderá a qualquer momento:
 * suprimir/visualizar a poligonal de controle 
 * suprimir/visualizar os pontos da curva. 
 
+Instruções
+----------
+
+* Clique com o botão direito para adicionar pontos.
+* Segure e arraste um ponto com o botão direito para movê-lo na janela. A curva se altera dinamicamente.
+* Aperte + para aumentar a quantidade de pontos da curva que serão mostrados (curva mais detalhada). Aperte - para  o contrário.
+* Aperte q para mostrar/esconder a poligonal de controle.
+* Aperte w para mostrar/esconder os pontos de controle.
+* Aperte e para mostrar/esconder os pontos selecionados pelo usuário.
+* Aperte r para mostrar/esconder a poligonal formada pelos pontos do usuário.
+* Aperte t para mostrar/esconder a curva.
 
 Autores
 -------
