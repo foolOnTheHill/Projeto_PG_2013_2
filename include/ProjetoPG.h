@@ -17,6 +17,8 @@ http://www.cin.ufpe.br/~voxarlabs
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
+#include <algorithm>
+#include <math.h>
 #include <gl/glut.h>
 
 using namespace std;
