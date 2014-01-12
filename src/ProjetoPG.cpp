@@ -9,8 +9,7 @@ Federal University of Pernambuco - UFPE
 -----------------------------------------------------------------------------
 */
 
-#include "Template2D.h"
-#include <math.h> 
+#include "ProjetoPG.h" 
 
 int state = 0; // P/ a maquina de estados
 int numpoints = 0; // Quantidade de pontos para desenhar a curva
@@ -399,21 +398,21 @@ void hadleKeyboard(unsigned char key, int x, int y) {
 	
 	if(key == ESC){ // Finaliza o programa
 		exit(0);
-	} else if (key == 't'){ // Toggle na Poligonal de controle
+	} else if (key == 'q'){ // Toggle na Poligonal de controle
 		hide_control_polygon = !hide_control_polygon;
-	} else if (key == 'r'){ // Toggle nos Pontos de controle
+	} else if (key == 'w'){ // Toggle nos Pontos de controle
 		hide_control_points = !hide_control_points;
-	} else if(key == '+'){ // Mais pontos na curva
+	} else if (key == 'e'){ // Toggle os pontos do usuario
+        hide_points = !hide_points;
+    } else if(key == 'r'){ // Toggle nas linhas entre os pontos
+        hide_lines = !hide_lines;
+    } else if (key == 't'){ // Toggle na curva
+        hide_curve = !hide_curve;
+    } else if(key == '+'){ // Mais pontos na curva
 		factor += 50;
 	} else if(key == '-'){ // Menos pontos na curva
 		factor = max(factor-50, 50);
-	} else if (key == 'q'){ // Toggle os pontos do usuario
-        hide_points = !hide_points;
-    } else if(key == 'w'){ // Toggle nas linhas entre os pontos
-        hide_lines = !hide_lines;
-    } else if (key == 'e'){ // Toggle na curva
-        hide_curve = !hide_curve;
-    }
+	} 
 
     state = MODIFIED;
 }
