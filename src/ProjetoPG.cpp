@@ -46,11 +46,71 @@ bool hide_control_polygon = true;
 bool hide_circle = false;
 
 void find_control_points() {
+	int L = qpoints - 3;
+	float a;
+
+	// d0 e d1
+	control_points[0] = ds[0];
+	control_points[1] = ds[1];
+
+	// d2
+	a = d_u(1)/(d_u(1) + d_u(2));
+	control_points[2].x = (1-a)*ds[1].x + a*ds[2].x;
+	control_points[2].y = (1-a)*ds[1].y + a*ds[2].y;
+
+	// d3L-3
+	a = d_u(L-1)/(d_u(L-1) + d_u(L));
+	control_points[(3*L)-3].x = (1-a)*ds[(3*L)-4].x + a*ds[(3*L)-2].x;
+	control_points[(3*L)-3].y = (1-a)*ds[(3*L)-4].y + a*ds[(3*L)-2].y;
+
+	// d3L-2
+	a = d_u(L-1)/(d_u(L-1) + d_u(L));
+	control_points[(3*L)-2].x = (1-a)*ds[L].x + a*ds[L+1].x;
+	control_points[(3*L)-2].y = (1-a)*ds[L].y + a*ds[L+1].y;
+
+	// d3L-1 e d3L
+	control_points[(3*L)-1] = ds[L+1];
+	control_points[3*L] = ds[L+2];
+
+	for (int i = 0; i < L-3; i++) {
+
+		// d3i
+		a = d_u(i)/(d_u(i) + d_u(i+1));
+		control_points[3*i].x = (1-a)*ds[(3*i)-1].x + a*ds[(3*i)+1].x;
+		control_points[3*i].y = (1-a)*ds[(3*i)-1].y + a*ds[(3*i)+1].y;
+
+		// d3i+1
+		a = d_u(i)/(d_u(i) + d_u(i+1) + d_u(i+2));
+		control_points[(3*i)+1].x = (1-a)*ds[i+1].x + a*ds[i+2].x;
+		control_points[(3*i)+1].y = (1-a)*ds[i+1].y + a*ds[i+2].y;
+
+		// d3i+2
+		a = (d_u(i) + d_u(i+1))/(d_u(i) + d_u(i+1) + d_u(i+2));
+		control_points[(3*i)+2].x = (1-a)*ds[i+1].x + a*ds[i+2].x;
+		control_points[(3*i)+2].y = (1-a)*ds[i+1].y + a*ds[i+2].y;
+	
+	}
 
 }
 
 void init_u() {
 
+	// Calcula os us utilizados na parametrização
+	for (int i = 0; i < qpoints-2; i++) {
+		float d_x = pow(ds[i+2].x - ds[i].x, 2.0);
+		float d_y = pow(ds[i+2].y - ds[i].y, 2.0);
+
+		us[i] = sqrt(d_x + d_y); // Corda
+
+		if (i > 0) {
+			us[i] += us[i-1];
+		}
+	}
+
+}
+
+float d_u(int i) {
+	return us[i] - us[i-1];
 }
 
 Point de_casteljau(Point* control_points, int i, int r, double t, int start) {
