@@ -32,12 +32,6 @@ class Point {
 public:
 	GLfloat x, y, z; // Coordenadas
 
-	Point (GLfloat xp, GLfloat yp, GLfloat zp) {
-		x = xp;
-		y = yp;
-		z = zp;
-	}
-
 	void setCoordXY(GLfloat xp, GLfloat yp) {
 		x = xp;
 		y = yp;
@@ -47,22 +41,6 @@ public:
 		x = xp;
 		y = yp;
 		z = zp;
-	}
-
-};
-
-class Circle {
-
-public:
-	Point center; // Centro do circulo
-	//Parametros RGB para colorir o circulo
-	float r, g, b;
-
-	Circle(Point c, float rp, float gp, float bp) {
-		center = c
-		r = rp;
-		g = gp;
-		b = bp;
 	}
 
 };
@@ -79,24 +57,18 @@ void init_u();
 
 /**
 * Funcao para calcular os pontos de controle de uma B-Spline Cubica C2.
-* @param control_points array com os pontos de controle
+* @param control array com os pontos de controle
 * @param i indice do ponto que se quer calcular
 * @param r nivel atual do algoritmo
 * @param t parametro da interpolacao
 * @param start indice do ponto onde se inicia a computacao
 */
-Point de_casteljau(Point* control_points, int i, int r, double t, int start);
+Point de_casteljau(Point* control, int i, int r, double t, int start);
 
 /**
 * Funcao que pinta a curva de Bezier na tela.
 */
 void draw_curve();
-
-/**
-* Funcao que pinta um circulo na tela.
-* @param c instancia da classe Circle, que representa o circulo que sera desenhado na tela.
-*/
-void draw_circle(Circle c);
 
 /**
 * Funcao para inicializacao do programa.
