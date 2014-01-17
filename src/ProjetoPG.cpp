@@ -9,12 +9,12 @@ Federal University of Pernambuco - UFPE
 -----------------------------------------------------------------------------
 */
 
-#include "ProjetoPG.h" 
+#include "Template2D.h" 
 
-int state = 0; // P/ a maquina de estados
+int state = 0; // Estado do programa
 int numpoints = 0; // Quantidade de pontos para desenhar a curva
 int qpoints = 0; // Quantidade de pontos colocados pelo usuario
-int factor = 100;
+int factor = 150;
 
 // Posicao do mouse
 GLfloat mouse_x, mouse_y;
@@ -27,8 +27,8 @@ float us[50000]; // Calculados pela aplicacao
 Point curve_points[10000]; // Representa a curva
 
 // Dimensoes da janela
-GLfloat window_width = 800.0;
-GLfloat window_height = 600.0;
+GLfloat window_width = 1300.0;
+GLfloat window_height = 650.0;
 
 // Controle do programa
 bool hide_points = false;
@@ -65,13 +65,11 @@ void find_control_points() {
 
     Point H, I, J, P, Q, R;
 
-    init_u();
+    init_u(); // Calcula os parametros
           
     control_points[0] = ds[0];
     control_points[1] = ds[1];
-    control_points[(3*L) - 1] = ds[L+1];
-    control_points[3*L] = ds[L+2];
-
+    
     a = d_u(1)/(d_u(1) + d_u(2));    
     b = d_u(2)/(d_u(1) + d_u(2));
     H.x = ds[1].x * b + ds[2].x * a;
@@ -90,21 +88,24 @@ void find_control_points() {
     J.y = (control_points[(3*L) - 4].y * b) + (control_points[(3*L) - 2].y * a);
     control_points[(3*L)-3] = J;
     
+	control_points[(3*L) - 1] = ds[L+1];
+    control_points[3*L] = ds[L+2];
+
     for(int i = 1; i <= L - 2; i++){
 
-        a = d_u(i)/(d_u(i) + d_u(i+1));    
+        a = d_u(i)/(d_u(i) + d_u(i+1)); // a = 1-b   
         b = d_u(i+1)/(d_u(i) + d_u(i+1));
         P.x = (control_points[(3*i) - 1].x * b) + (control_points[(3*i) + 1].x * a);
         P.y = (control_points[(3*i) - 1].y * b) + (control_points[(3*i) + 1].y * a);
         control_points[3*i] = P;
          
-        a = d_u(i)/(d_u(i) + d_u(i+1) + d_u(i+2));
+        a = d_u(i)/(d_u(i) + d_u(i+1) + d_u(i+2)); // a = 1-b
         b = (d_u(i+1) + d_u(i+2))/(d_u(i) + d_u(i+1) + d_u(i+2));
         Q.x = (ds[i+1].x * b) + (ds[i+2].x * a);
         Q.y = (ds[i+1].y * b) + (ds[i+2].y * a);
         control_points[(3*i)+1] = Q;
          
-        a = (d_u(i) + d_u(i+1))/(d_u(i) + d_u(i+1) + d_u(i+2));
+        a = (d_u(i) + d_u(i+1))/(d_u(i) + d_u(i+1) + d_u(i+2)); // a = 1-b
         b = d_u(i+2)/(d_u(i) + d_u(i+1) + d_u(i+2));
         R.x = (ds[i+1].x * b) + (ds[i+2].x * a);
         R.y = (ds[i+1].y * b) + (ds[i+2].y * a);
@@ -118,7 +119,7 @@ void find_control_points() {
 Point de_casteljau(Point* control, int i, int r, double t, int start) {
 
 	if (r == 0) {
-		return control[i+start]; // Ponto no nivel adequado
+		return control[i+start]; // Retorna o ponto do nivel adequado
 	} else {
 		Point g = de_casteljau(control, i, r-1, t, start);
 		Point h = de_casteljau(control, i+1, r-1, t, start);
@@ -388,6 +389,7 @@ void handleMouse(int btn, int key_state, int x, int y) {
 			ds[qpoints] = p;
 			qpoints += 1;
 			glFinish();
+			factor += 20;
 			state = MODIFIED;
 		}
 	}
@@ -445,7 +447,7 @@ int main(int argc, char **argv) {
 
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
 	glutInitWindowSize(window_width, window_height);
-	glutInitWindowPosition(0, 100);
+	glutInitWindowPosition(40, 50);
 	glutCreateWindow("B-Spline Cubica C2");
 
 	glutDisplayFunc(mydisplay);
