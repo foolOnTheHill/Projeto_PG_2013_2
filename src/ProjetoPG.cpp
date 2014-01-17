@@ -9,7 +9,7 @@ Federal University of Pernambuco - UFPE
 -----------------------------------------------------------------------------
 */
 
-#include "Template2D.h" 
+#include "ProjetoPG.h" 
 
 int state = 0; // Estado do programa
 int numpoints = 0; // Quantidade de pontos para desenhar a curva

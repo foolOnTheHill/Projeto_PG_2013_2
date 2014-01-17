@@ -11,8 +11,8 @@ http://www.cin.ufpe.br/~voxarlabs
 -----------------------------------------------------------------------------
 */
 
-#ifndef _TEMPLATE2D_H_
-#define _TEMPLATE2D_H_
+#ifndef _PROJETOPG_H_
+#define _PROJETOPG_H_
 
 #include <cstdio>
 #include <cstdlib>
@@ -131,4 +131,4 @@ void hadleSpecialKeyboard(int key, int x, int y);
 */
 void loop(int id);
 
-#endif //_TEMPLATE2D_H_
+#endif //_PROJETOPG_H_
